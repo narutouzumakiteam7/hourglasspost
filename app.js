@@ -9,8 +9,113 @@
  * Privacy: the session token (sid_token) is kept only in sessionStorage, so it's forgotten when
  * the tab closes. No cookies are sent (we pass the token as a parameter), and there's no tracking.
  */
+/* =====================================================================
+ * SUPPORT / TIP SETTINGS: the only place you need to edit.
+ *
+ *   upiId:  your UPI ID, e.g. "yourname@okaxis"  (shows a "Tip via UPI" button + QR code)
+ *   bmcUrl: your Buy Me a Coffee page, e.g. "https://buymeacoffee.com/yourname"
+ *
+ * While BOTH are empty (""), every support section stays hidden on the site.
+ * ===================================================================== */
+var SUPPORT = {
+  upiId: "",
+  bmcUrl: "",
+  payeeName: "HourglassPost"
+};
+
+/* ---------- site-wide: theme toggle + support section (runs on every page) ---------- */
 (function () {
   "use strict";
+
+  var THEME_KEY = "hourglasspost-theme";
+  var scriptSrc = (document.currentScript && document.currentScript.src) || document.baseURI;
+
+  function getPref(key) { try { return window.localStorage.getItem(key); } catch (e) { return null; } }
+  function setPref(key, val) { try { window.localStorage.setItem(key, val); } catch (e) { /* ignore */ } }
+
+  // ----- theme -----
+  var toggle = document.getElementById("theme-toggle");
+  function currentTheme() {
+    var t = document.documentElement.dataset.theme;
+    if (t) return t;
+    return window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+  }
+  function syncThemeButton() {
+    if (!toggle) return;
+    var next = currentTheme() === "dark" ? "light" : "dark";
+    toggle.setAttribute("aria-label", "Switch to " + next + " mode");
+    toggle.title = "Switch to " + next + " mode";
+  }
+  if (toggle) {
+    toggle.addEventListener("click", function () {
+      var next = currentTheme() === "dark" ? "light" : "dark";
+      document.documentElement.dataset.theme = next;
+      setPref(THEME_KEY, next);
+      syncThemeButton();
+    });
+    syncThemeButton();
+  }
+
+  // ----- support / tips (hidden unless configured) -----
+  var upiId = String(SUPPORT.upiId || "").trim();
+  var bmcUrl = String(SUPPORT.bmcUrl || "").trim();
+  if (upiId && !/^[A-Za-z0-9._-]{2,256}@[A-Za-z][A-Za-z0-9.-]{1,64}$/.test(upiId)) {
+    if (window.console) console.warn("HourglassPost: SUPPORT.upiId doesn't look like a UPI ID, so it is ignored.");
+    upiId = "";
+  }
+  if (bmcUrl && !/^https:\/\/[^\s"'<>]+$/i.test(bmcUrl)) {
+    if (window.console) console.warn("HourglassPost: SUPPORT.bmcUrl must start with https://, so it is ignored.");
+    bmcUrl = "";
+  }
+  if (!upiId && !bmcUrl) return; // nothing configured: keep every support element hidden
+
+  var payee = String(SUPPORT.payeeName || "HourglassPost");
+  var upiLink = upiId ? "upi://pay?pa=" + encodeURIComponent(upiId).replace(/%40/g, "@") + "&pn=" + encodeURIComponent(payee) + "&cu=INR" : "";
+
+  // Footer link on every page
+  document.querySelectorAll("[data-support-footer]").forEach(function (node) {
+    var a = node.querySelector("a");
+    if (a) {
+      if (document.getElementById("support")) a.setAttribute("href", "#support");
+      else if (!upiId) { a.setAttribute("href", bmcUrl); a.target = "_blank"; a.rel = "noopener noreferrer"; }
+    }
+    node.hidden = false;
+  });
+
+  var section = document.getElementById("support");
+  if (!section) return;
+  var upiBox = document.getElementById("support-upi");
+  var upiBtn = document.getElementById("support-upi-btn");
+  var upiText = document.getElementById("support-upi-id");
+  var qrBox = document.getElementById("support-qr");
+  var bmcBtn = document.getElementById("support-bmc");
+
+  if (bmcUrl && bmcBtn) { bmcBtn.href = bmcUrl; bmcBtn.hidden = false; }
+  if (upiId && upiBox) {
+    upiBtn.href = upiLink;
+    upiText.textContent = upiId;
+    upiBox.hidden = false;
+    // Load the vendored MIT QR library (no CDN) only when it's needed.
+    var s = document.createElement("script");
+    s.src = new URL("vendor/qrcode.js", scriptSrc).href;
+    s.onload = function () {
+      try {
+        var qr = window.qrcode(0, "M");
+        qr.addData(upiLink);
+        qr.make();
+        qrBox.innerHTML = qr.createSvgTag({ cellSize: 4, margin: 2, scalable: true, alt: "UPI QR code to tip HourglassPost", title: "Scan with any UPI app" });
+      } catch (e) { qrBox.hidden = true; }
+    };
+    s.onerror = function () { qrBox.hidden = true; };
+    document.head.appendChild(s);
+  }
+  section.hidden = false;
+})();
+
+/* ---------- inbox (home page only) ---------- */
+(function () {
+  "use strict";
+  if (!document.getElementById("address")) return; // not the home page
 
   var API = "https://api.guerrillamail.com/ajax.php";
   var POLL_MS = 10000;          // auto-refresh about every 10 seconds
@@ -18,7 +123,6 @@
   var REQUEST_TIMEOUT_MS = 15000;
   var ADDRESS_LIFETIME_S = 3600; // Guerrilla Mail keeps mail for about 60 minutes
   var STORE_KEY = "hourglasspost-session";
-  var THEME_KEY = "hourglasspost-theme";
 
   // ---------- small helpers ----------
   var $ = function (id) { return document.getElementById(id); };
@@ -31,7 +135,7 @@
     readerSubject: $("reader-subject"), readerFrom: $("reader-from"), readerDate: $("reader-date"),
     readerLoading: $("reader-loading"), readerFrame: $("reader-frame"), readerText: $("reader-text"),
     viewHtml: $("view-html"), viewText: $("view-text"), deleteBtn: $("delete-btn"), backBtn: $("back-btn"),
-    themeToggle: $("theme-toggle"), toast: $("toast")
+    toast: $("toast")
   };
 
   /** Storage that never throws (sandboxed iframes and some privacy modes block it). */
@@ -46,7 +150,6 @@
     };
   }
   var session = safeStorage("sessionStorage");
-  var prefs = safeStorage("localStorage");
 
   /** Guerrilla Mail returns subjects and excerpts HTML-escaped; decode to plain text safely (nothing is executed). */
   function decodeEntities(s) {
@@ -468,18 +571,6 @@
     else fallback();
   }
 
-  // ---------- theme ----------
-  function currentTheme() {
-    var t = document.documentElement.dataset.theme;
-    if (t) return t;
-    return window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
-  }
-  function syncThemeButton() {
-    var next = currentTheme() === "dark" ? "light" : "dark";
-    el.themeToggle.setAttribute("aria-label", "Switch to " + next + " mode");
-    el.themeToggle.title = "Switch to " + next + " mode";
-  }
-
   // ---------- wire up ----------
   el.copyBtn.addEventListener("click", copyAddress);
   el.address.addEventListener("focus", function () { el.address.select(); });
@@ -489,17 +580,10 @@
   el.deleteBtn.addEventListener("click", deleteCurrent);
   el.viewHtml.addEventListener("click", function () { setView("html"); });
   el.viewText.addEventListener("click", function () { setView("text"); });
-  el.themeToggle.addEventListener("click", function () {
-    var next = currentTheme() === "dark" ? "light" : "dark";
-    document.documentElement.dataset.theme = next;
-    prefs.set(THEME_KEY, next);
-    syncThemeButton();
-  });
   document.addEventListener("keydown", function (e) { if (e.key === "Escape" && !el.reader.hidden) closeReader(true); });
   document.addEventListener("visibilitychange", function () { if (!document.hidden && state.address && !state.expired) refresh(false); });
   window.addEventListener("online", function () { state.failures = 0; refresh(true); });
   setInterval(updateMeta, 30000);
 
-  syncThemeButton();
   init();
 })();

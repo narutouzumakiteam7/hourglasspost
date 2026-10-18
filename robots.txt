@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://narutouzumakiteam7.github.io/hourglasspost/sitemap.xml
