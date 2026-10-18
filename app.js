@@ -1,5 +1,5 @@
 /*
- * QuickDrop Mail: a static, server-less disposable inbox.
+ * HourglassPost: a static, server-less disposable inbox.
  *
  * Mail provider: Guerrilla Mail's free public JSON API (https://www.guerrillamail.com/GuerrillaMailAPI.html).
  * It needs no key and allows cross-origin requests from any site, so this page works on GitHub Pages.
@@ -17,8 +17,8 @@
   var MAX_BACKOFF_MS = 120000;  // after errors, wait up to 2 minutes between tries
   var REQUEST_TIMEOUT_MS = 15000;
   var ADDRESS_LIFETIME_S = 3600; // Guerrilla Mail keeps mail for about 60 minutes
-  var STORE_KEY = "quickdropmail-session";
-  var THEME_KEY = "quickdropmail-theme";
+  var STORE_KEY = "hourglasspost-session";
+  var THEME_KEY = "hourglasspost-theme";
 
   // ---------- small helpers ----------
   var $ = function (id) { return document.getElementById(id); };
@@ -123,7 +123,7 @@
       else if (v !== undefined && v !== null) q.set(k, String(v));
     });
     if (state.sid) q.set("sid_token", state.sid);
-    q.set("agent", (navigator.userAgent || "QuickDrop Mail").slice(0, 160));
+    q.set("agent", (navigator.userAgent || "HourglassPost").slice(0, 160));
 
     if (!navigator.onLine) return Promise.reject(new ApiError("offline", "offline"));
     var ctrl = typeof AbortController === "function" ? new AbortController() : null;

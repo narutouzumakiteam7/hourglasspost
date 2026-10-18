@@ -1,4 +1,4 @@
-/* QuickDrop Mail: plain CSS, no frameworks, no web fonts (works offline and on GitHub Pages). */
+/* HourglassPost: plain CSS, no frameworks, no web fonts (works offline and on GitHub Pages). */
 :root {
   --bg: #f6f7fb;
   --bg-accent: radial-gradient(1200px 500px at 15% -10%, #e0e7ff 0%, transparent 60%), radial-gradient(900px 400px at 100% 0%, #fae8ff 0%, transparent 55%);

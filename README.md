@@ -1,4 +1,4 @@
-# QuickDrop Mail
+# HourglassPost
 
 A free, one-page **disposable email inbox**. It's plain HTML, CSS and JavaScript with no build step and no server.
 

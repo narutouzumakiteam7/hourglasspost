@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>QuickDrop Mail: free disposable email address</title>
-  <meta name="description" content="QuickDrop Mail gives you a free, temporary email address in one click. Public and disposable: not for important accounts.">
+  <title>HourglassPost: free disposable email address</title>
+  <meta name="description" content="HourglassPost gives you a free, temporary email address in one click. Public and disposable: not for important accounts.">
   <meta name="color-scheme" content="light dark">
   <meta name="theme-color" content="#4f46e5">
   <meta name="referrer" content="no-referrer">
@@ -12,7 +12,7 @@
   <link rel="stylesheet" href="styles.css">
   <script>
     // Apply the saved theme before the page paints (avoids a white flash in dark mode).
-    try { var t = localStorage.getItem("quickdropmail-theme"); if (t === "dark" || t === "light") document.documentElement.dataset.theme = t; } catch (e) {}
+    try { var t = localStorage.getItem("hourglasspost-theme"); if (t === "dark" || t === "light") document.documentElement.dataset.theme = t; } catch (e) {}
   </script>
 </head>
 <body>
@@ -20,9 +20,9 @@
 
   <header class="topbar">
     <div class="container topbar__inner">
-      <a class="brand" href="./" aria-label="QuickDrop Mail home">
-        <svg class="brand__logo" viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" rx="14"/><path d="M14 22h36v22H14z"/><path d="M14 22l18 13 18-13"/></svg>
-        <span>QuickDrop <strong>Mail</strong></span>
+      <a class="brand" href="./" aria-label="HourglassPost home">
+        <svg class="brand__logo" viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" rx="14"/><path d="M20 14h24M20 50h24M22 14c0 10 20 14 20 18s-20 8-20 18M42 14c0 10-20 14-20 18s20 8 20 18"/></svg>
+        <span>Hourglass<strong>Post</strong></span>
       </a>
       <button class="icon-btn" id="theme-toggle" type="button" aria-label="Switch to dark mode" title="Switch theme">
         <svg class="icon icon--moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
@@ -129,13 +129,13 @@
 
   <footer class="footer">
     <div class="container footer__inner">
-      <p>Mailboxes are provided by <a href="https://www.guerrillamail.com/" rel="noopener noreferrer" target="_blank">Guerrilla Mail</a> through its free public API. QuickDrop Mail is not affiliated with Guerrilla Mail. Use is subject to the <a href="https://www.guerrillamail.com/tos/" rel="noopener noreferrer" target="_blank">Guerrilla Mail Terms of Service</a>.</p>
-      <p class="muted">QuickDrop Mail has no ads, no tracking and no cookies of its own. Your session is kept only in this browser tab (sessionStorage) and is forgotten when you close it.</p>
+      <p>Mailboxes are provided by <a href="https://www.guerrillamail.com/" rel="noopener noreferrer" target="_blank">Guerrilla Mail</a> through its free public API. HourglassPost is not affiliated with Guerrilla Mail. Use is subject to the <a href="https://www.guerrillamail.com/tos/" rel="noopener noreferrer" target="_blank">Guerrilla Mail Terms of Service</a>.</p>
+      <p class="muted">HourglassPost has no ads, no tracking and no cookies of its own. Your session is kept only in this browser tab (sessionStorage) and is forgotten when you close it.</p>
     </div>
   </footer>
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
-  <noscript><div class="alert container">QuickDrop Mail needs JavaScript to create an address and check mail.</div></noscript>
+  <noscript><div class="alert container">HourglassPost needs JavaScript to create an address and check mail.</div></noscript>
   <script src="app.js" defer></script>
 </body>
 </html>
