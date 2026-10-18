@@ -103,6 +103,11 @@
         <div class="address-card__footer">
           <p id="address-meta" class="muted">Getting an address…</p>
           <div class="address-actions">
+            <div class="domain-picker">
+              <label class="domain-picker__label" for="domain-select">Domain</label>
+              <span class="select-wrap"><select class="select" id="domain-select" aria-describedby="domain-help" disabled><option value="guerrillamailblock.com">@guerrillamailblock.com</option><option value="sharklasers.com">@sharklasers.com</option><option value="grr.la">@grr.la</option><option value="guerrillamail.com">@guerrillamail.com</option><option value="guerrillamail.net">@guerrillamail.net</option><option value="guerrillamail.org">@guerrillamail.org</option><option value="guerrillamail.biz">@guerrillamail.biz</option><option value="guerrillamail.info">@guerrillamail.info</option><option value="guerrillamail.de">@guerrillamail.de</option><option value="pokemail.net">@pokemail.net</option><option value="spam4.me">@spam4.me</option></select></span>
+              <span class="visually-hidden" id="domain-help">Changes only how your address is shown and copied. It stays the same inbox.</span>
+            </div>
             <button class="btn btn--ghost" id="new-btn" type="button" disabled>
               <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12a9 9 0 1 1-2.6-6.4"/><path d="M21 3v6h-6"/></svg>
               New address

@@ -123,6 +123,12 @@ var SUPPORT = {
   var REQUEST_TIMEOUT_MS = 15000;
   var ADDRESS_LIFETIME_S = 3600; // Guerrilla Mail keeps mail for about 60 minutes
   var STORE_KEY = "hourglasspost-session";
+  var DOMAIN_KEY = "hourglasspost-domain";
+  // Guerrilla Mail domains. All of them deliver to the same mailbox (same user name), so changing the
+  // domain only changes how the address is shown and copied. Checked against Guerrilla Mail's own
+  // web client (its domain menu just swaps the shown host) and their MX records (one mail server).
+  var DOMAINS = ["guerrillamailblock.com", "sharklasers.com", "grr.la", "guerrillamail.com", "guerrillamail.net",
+    "guerrillamail.org", "guerrillamail.biz", "guerrillamail.info", "guerrillamail.de", "pokemail.net", "spam4.me"];
 
   // ---------- small helpers ----------
   var $ = function (id) { return document.getElementById(id); };
@@ -135,7 +141,7 @@ var SUPPORT = {
     readerSubject: $("reader-subject"), readerFrom: $("reader-from"), readerDate: $("reader-date"),
     readerLoading: $("reader-loading"), readerFrame: $("reader-frame"), readerText: $("reader-text"),
     viewHtml: $("view-html"), viewText: $("view-text"), deleteBtn: $("delete-btn"), backBtn: $("back-btn"),
-    toast: $("toast")
+    toast: $("toast"), domain: $("domain-select")
   };
 
   /** Storage that never throws (sandboxed iframes and some privacy modes block it). */
@@ -215,7 +221,7 @@ var SUPPORT = {
   }
 
   var state = { sid: "", address: "", ts: 0, messages: [], seen: {}, deleted: {}, selectedId: null,
-    view: "html", current: null, failures: 0, pollTimer: null, inflight: null, firstLoad: true, expired: false };
+    view: "html", current: null, domain: "", failures: 0, pollTimer: null, inflight: null, firstLoad: true, expired: false };
 
   function api(fn, params, method) {
     var q = new URLSearchParams();
@@ -279,11 +285,37 @@ var SUPPORT = {
     el.listPanel.setAttribute("aria-busy", busy ? "true" : "false");
   }
 
+  // ---------- domain picker ----------
+  function isKnownDomain(d) { return DOMAINS.indexOf(String(d || "").toLowerCase()) !== -1; }
+  function apiDomain() { return String(state.address.split("@")[1] || "").toLowerCase(); }
+  /** The address as shown and copied: the same mailbox user, on the domain the visitor picked. */
+  function displayAddress() {
+    if (!state.address) return "";
+    var user = state.address.split("@")[0];
+    var d = isKnownDomain(state.domain) ? state.domain : apiDomain();
+    return user + "@" + d;
+  }
+  function syncDomainSelect() {
+    if (!el.domain) return;
+    var d = isKnownDomain(state.domain) ? state.domain : (isKnownDomain(apiDomain()) ? apiDomain() : DOMAINS[0]);
+    el.domain.value = d;
+    el.domain.disabled = !state.address;
+  }
+  function changeDomain() {
+    var d = el.domain.value;
+    if (!isKnownDomain(d)) return;
+    state.domain = d;
+    session.set(DOMAIN_KEY, d);
+    el.address.value = displayAddress();
+    toast("Now showing @" + d + " (same inbox)");
+  }
+
   function setAddress(address, ts) {
     state.address = address || "";
     state.ts = Number(ts) || Math.floor(Date.now() / 1000);
     state.expired = false;
-    el.address.value = state.address;
+    el.address.value = displayAddress();
+    syncDomainSelect();
     el.copyBtn.disabled = !state.address;
     el.newBtn.disabled = false;
     el.refreshBtn.disabled = !state.address;
@@ -398,6 +430,7 @@ var SUPPORT = {
   function createAddress() {
     el.newBtn.disabled = true; el.copyBtn.disabled = true; el.refreshBtn.disabled = true;
     el.address.value = ""; el.address.placeholder = "Creating your address…";
+    if (el.domain) el.domain.disabled = true;
     el.meta.textContent = "Creating a fresh address…";
     closeReader(false);
     stopPolling();
@@ -430,6 +463,8 @@ var SUPPORT = {
   }
 
   function init() {
+    var savedDomain = session.get(DOMAIN_KEY);
+    if (isKnownDomain(savedDomain)) state.domain = savedDomain.toLowerCase();
     var saved = null;
     try { saved = JSON.parse(session.get(STORE_KEY) || "null"); } catch (e) { saved = null; }
     renderList();
@@ -573,6 +608,7 @@ var SUPPORT = {
 
   // ---------- wire up ----------
   el.copyBtn.addEventListener("click", copyAddress);
+  if (el.domain) el.domain.addEventListener("change", changeDomain);
   el.address.addEventListener("focus", function () { el.address.select(); });
   el.newBtn.addEventListener("click", function () { createAddress().then(function () { if (state.address) toast("New address ready"); }); });
   el.refreshBtn.addEventListener("click", function () { state.failures = 0; refresh(true); });

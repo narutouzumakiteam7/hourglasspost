@@ -3,6 +3,7 @@
 A free **disposable email inbox** website. It's plain HTML, CSS and JavaScript with no build step and no server.
 
 * Opens with a random temporary address, plus **Copy** and **New address** buttons.
+* A **Domain** menu lets visitors show the address on any Guerrilla Mail domain (`DOMAINS` in `app.js`). All of them deliver to the same mailbox, so only the shown/copied address changes. The choice is kept in `sessionStorage`.
 * The inbox refreshes about every 10 seconds (it pauses while the tab is hidden and slows down after errors), and there's a manual refresh button.
 * Messages open in a **sandboxed iframe**: no scripts, no remote images or tracking pixels, and no forms. A **plain-text** view is available too.
 * Light and dark mode, responsive, keyboard and screen-reader friendly.
